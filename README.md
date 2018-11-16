@@ -19,4 +19,4 @@ There are two identical copies of the documentation. They live in
 
 # The Image
 
-![](img.ppm)
+![](final.jpg)
