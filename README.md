@@ -1,16 +1,22 @@
-#Path Tracer, Based on P. Shirley's Ray Tracing Minibooks.
+# Ray Tracer
 
-## Features:
-- [x] Motion Blur
-- [x] Bounding Volume Hierarchies (bvh.h)
-- [x] Image Texture Mapping
-- [x] Solid Textures
-- [x] Perlin Noise
+Written by Jerry Wang and Mike Gao
 
 Compile and Run under OSX:
 ```
+cd
 cmake .
 make
+./Ray_Tracer
 ```
 
-Not tested in any other platform, but should work if you have build-essential and cmake installed.
+# Documentation
+
+There are two identical copies of the documentation. They live in 
+
+- https://graphics.jerrywang.website
+- https://mikegao.net/graphics
+
+# The Image
+
+![](img.ppm)
