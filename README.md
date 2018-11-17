@@ -20,3 +20,15 @@ There are two identical copies of the documentation. They live in
 # The Image
 
 ![](final.jpg)
+
+# Reference
+
+*Ray Tracing in One Weekend* by Peter Shirley
+
+*Ray Tracing the Next Week* by Peter Shirley
+
+*Fundamentals of Computer Graphics* by Shirley et al.
+
+*Light for Visual Artists* by Richard Yot
+
+*The Secret Language of Color* by Joann Eckstut 
