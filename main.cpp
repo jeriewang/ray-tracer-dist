@@ -74,10 +74,10 @@ int createProcess() {
 // Here are scene configuration as well as camera configuration
 int main(int argc, char **argv) {
     // pixel count (x,y)
-    const int nx = 1024;
-    const int ny = 1024;
+    const int nx = 4096;
+    const int ny = 4096;
     // Sampling Size
-    const int ns = 50000;
+    const int ns = 100000;
     // Camera View
     vec3 lookfrom(500, 500, -1300);
     vec3 lookat(500, 500, 1000);

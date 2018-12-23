@@ -22,7 +22,7 @@ hitable *scene() {
     material *rightWall = new lambertian(new constant_texture(rgb(0xb0, 0x7a, 0x29)));
 
     material *ceiling = new lambertian(new constant_texture(rgb(0xff, 0xe8, 0xe0)));
-    material *ground = new metal(rgb(0xff, 0xe8, 0xe0), 0.25);
+    material *ground = new metal(rgb(0xff, 0xe8, 0xe0), 0.15);
     material *backWall = new lambertian(new constant_texture(rgb(245, 208, 184)));
 
     material *leftWall = new lambertian(new constant_texture(rgb(0x60, 0x4e, 0xc9)));
