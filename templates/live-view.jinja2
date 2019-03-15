@@ -1,0 +1,104 @@
+<html>
+<head>
+    <title>Ray Tracing Live View</title>
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css"
+          integrity="sha256-1mcRjtAxlSjp6XJBgrBeeCORfBp/ppyX4tsvpQVCcpA= sha384-b5S5X654rX3Wo6z5/hnQ4GBmKuIJKMPwrJXn52ypjztlnDK2w9+9hSMBz/asy9Gw sha512-M1VveR2JGzpgWHb0elGqPTltHK3xbvu3Brgjfg4cg5ZNtyyApxw/45yHYsZ/rCVbfoO5MSZxB241wWq642jLtA=="
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js"
+            integrity="sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw=="
+            crossorigin="anonymous">
+    </script>
+    <style>
+        #img img {
+            max-width: 100%;
+            width: auto;
+            height: 99vh;
+            vertical-align: middle;
+            margin: auto;
+            display: block;
+        }
+
+        body {
+            overflow: hidden;
+        }
+        #monitor{
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+<script>
+    function reload() {
+        $.ajax(
+            `{{request.url_root}}api/live-image?w=${$('#img img').width()}&h=${$('#img img').height()}`,
+            {
+                success: (data) => {
+                    let img=$('<img>').attr("src", `data:image/bmp;base64, ${data}`).appendTo($("#img").empty());
+                }
+            });
+        $.ajax(
+            "{{request.url_root}}api/worker-status",
+            {
+                success: (data) => {
+                    let monitor = JSON.parse(data);
+                    console.log(monitor);
+                    $('#avg-pix-time').html(monitor['avg_pixel_time']+'s');
+                    $('#active-workers').html(monitor['active_workers']);
+                    for (let hostname in monitor['hosts']){
+                        let menu=$('#'+hostname.replace(' ','-').replace('.','-'));
+                        if (menu.length>0){
+                            for (let i in monitor.hosts[hostname].workers){
+                                $('#'+monitor.hosts[hostname].workers[i].id+'-last-seen').html(new Date(monitor.hosts[hostname].workers[i].last_seen*1000).toISOString().slice(-13,-5))
+                                $('#'+monitor.hosts[hostname].workers[i].id+'-time').html(monitor.hosts[hostname].workers[i].time+'s')
+                            }
+                        } else{
+                            $(`<li><a href="javascript:void(0)">${hostname}</a><ul id="${hostname.replace(' ','-').replace('.','-')}" class="menu vertical nested"></ul></li>`).appendTo($('#accordion'));
+                            let host=$('#'+hostname.replace(' ','-').replace('.','-'));
+                            for (let i in monitor.hosts[hostname].workers){
+                                console.log(monitor.hosts[hostname].workers[i].worker_id);
+                                $(`<li><a href="javascript:void(0)">Worker ${i}</a></li>`).appendTo(host).append($(`<ul id="${monitor.hosts[hostname].workers[i].id}" class="menu vertical nested">
+                                    <li><a href="javascript:void(0)">Last seen</a><ul class="vertical menu nested"><li><a href="javascript:void(0)" id="${monitor.hosts[hostname].workers[i].id}-last-seen">${new Date(monitor.hosts[hostname].workers[i].last_seen*1000).toISOString().slice(-13,-5)}</a></li></ul></li>
+                                    <li><a href="javascript:void(0)">Time</a><ul class="vertical menu nested"><li><a href="javascript:void(0)" id="${monitor.hosts[hostname].workers[i].id}-time">${monitor.hosts[hostname].workers[i].time}s</a></li></ul></li>
+                                    </ul>`))
+                            }
+                        }
+                    }
+                    new Foundation.AccordionMenu($('#accordion'))
+                }
+            })
+
+    }
+    reload();
+    setInterval(reload, {{ refresh_frequency }})
+
+</script>
+<div id="wrapper" class="grid-x grid-margin-x" style="height: 100vh;">
+    <div id="img" class="cell medium-10"><img></div>
+    <div id="monitor" class="cell auto">
+        <ul>
+            <li>
+        Active workers: <span id="active-workers">0</span>
+            </li>
+            <li>
+        Average pixel time: <span id="avg-pix-time">INF</span>
+            </li>
+        </ul>
+        <ul data-accordion-menu class="menu accordion-menu vertical align-middle" id="accordion">
+        </ul>
+    </div>
+</div>
+<script>
+    $(document).foundation();
+</script>
+</body>
+</html>
