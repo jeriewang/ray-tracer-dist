@@ -8,6 +8,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 endpoint = 'http://134.209.223.110/api/worker'
 
 process_count=int(input('Process count?: '))
+detach=raw_input('Detach process? y/n: ').lower().strip().startswith('y')
 
 class PutRequest(urllib2.Request):
     def __init__(self, *args, **kwargs):
@@ -67,6 +68,8 @@ def start_worker(i):
             urllib2.urlopen(req)
         except:
             pass
-
+if detach:
+    if os.fork()!=0:
+        sys.exit(0)
 for i in range(process_count):
     multiprocessing.Process(target=start_worker,args=(i,)).start()
