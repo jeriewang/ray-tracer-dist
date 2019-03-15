@@ -5,7 +5,7 @@ import os, sys, multiprocessing, time, urllib2, signal,socket
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-endpoint = 'http://localhost:5000/api/worker'
+endpoint = 'http://134.209.223.110/api/worker'
 
 process_count=int(input('Process count?: '))
 

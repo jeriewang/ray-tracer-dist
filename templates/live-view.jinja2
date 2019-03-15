@@ -54,6 +54,7 @@
                     console.log(monitor);
                     $('#avg-pix-time').html(monitor['avg_pixel_time']+'s');
                     $('#active-workers').html(monitor['active_workers']);
+                    $('#ETA').html(monitor['ETA']);
                     for (let hostname in monitor['hosts']){
                         let menu=$('#'+hostname.replace(' ','-').replace('.','-'));
                         if (menu.length>0){
@@ -83,14 +84,17 @@
 
 </script>
 <div id="wrapper" class="grid-x grid-margin-x" style="height: 100vh;">
-    <div id="img" class="cell medium-10"><img></div>
+    <div id="img" class="cell medium-9"><img></div>
     <div id="monitor" class="cell auto">
         <ul>
             <li>
         Active workers: <span id="active-workers">0</span>
             </li>
             <li>
-        Average pixel time: <span id="avg-pix-time">INF</span>
+        Average pixel time: <span id="avg-pix-time">0</span>
+            </li>
+            <li>
+                ETA: <span id="ETA">0</span>
             </li>
         </ul>
         <ul data-accordion-menu class="menu accordion-menu vertical align-middle" id="accordion">

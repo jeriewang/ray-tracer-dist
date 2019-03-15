@@ -4,18 +4,15 @@ import random
 from itertools import filterfalse
 import base64
 from io import BytesIO
-from collections import defaultdict
-import numpy as np
 import datetime, json,time
 import os,sys,atexit,collections
 import sqlite3
 
-WIDTH = 64
-HEIGHT = 64
-SAMPLE_RATE = 10000
+WIDTH = 4096
+HEIGHT = 4096
+SAMPLE_RATE = 50000
 MONITOR_REFRESH_INTERVAL = 1000 #max(1000, WIDTH * HEIGHT * 4 / 1024 / 1024 * 1000)  # assume 1MB/s network
 # in miliseconds
-
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -69,17 +66,18 @@ if c.fetchone()[0]==0:
             c.execute('INSERT INTO pixels (x,y) VALUES (?,?)',(x,y))
     print('Done')
 
-c.execute('SELECT x,y,r,g,b FROM pixels WHERE r IS NOT NULL ORDER BY x, y')
+print('Cleaning up database...')
+c.execute('UPDATE pixels SET assigned=0 WHERE r IS NULL;')
+print('Loading pixels...')
+c.execute('SELECT x,y,r,g,b FROM pixels WHERE r IS NOT NULL')
+print('Initializing the image...')
 image=Image.new('RGB',(WIDTH,HEIGHT))
 for x,y,r,g_,b in c.fetchall():
    image.putpixel((x,y),(r,g_,b))
-c.execute('SELECT count() FROM pixels')
+c.execute('SELECT count() FROM pixels WHERE r IS NOT NULL ')
 total_rendered_pixels=c.fetchone()[0]
 c.close()
 conn.commit()
-
-
-
 
 
 @app.route('/api/worker', methods=['PUT'])
@@ -89,7 +87,6 @@ def worker_join():
     data=request.get_json()
     name=data['name']
     id=data['id']
-
     c=get_db().cursor()
     c.execute('SELECT * FROM workers WHERE name=? AND worker_id=?',(name,id))
 
@@ -101,7 +98,6 @@ def worker_join():
 
 @app.route('/api/worker', methods=['GET'])
 def task_retrieval():
-    
     c=get_db().cursor()
     c.execute('SELECT id,x,y FROM pixels WHERE assigned=0 LIMIT 1')
     r=c.fetchone()
@@ -124,7 +120,7 @@ def task_retrieval():
 
 @app.route('/api/worker', methods=['POST'])
 def task_complete():
-    
+    global total_rendered_pixels
     data = request.get_json()
     task = data['task'].split()
     x = int(task[0])
@@ -132,14 +128,14 @@ def task_complete():
     pixel = tuple(map(int, data['pixel'].split()))
     image.putpixel((x, y), pixel)
     c=get_db().cursor()
-    #print('UPDATE pixels SET r={},g={},b={} WHERE x={} AND y={}'.format(*pixel,x,y))
-    c.execute('UPDATE pixels SET r=?,g=?,b=? WHERE x=? AND y=?',(*pixel,x,y))
+    c.execute('UPDATE pixels SET r=?,g=?,b=? WHERE id=?',(*pixel,y*4096+x))
     c.execute('SELECT last_seen FROM workers WHERE name=? AND worker_id=?',(data['name'],int(data['id'])))
     t=time.time()-c.fetchone()[0]
     c.execute('UPDATE workers SET last_seen=?, update_time=?, is_terminated=0 WHERE name=? AND worker_id=?',(time.time(),t,data['name'],data['id']))
     c.close()
     get_db().commit()
     close_db()
+    total_rendered_pixels+=1
     return ''
 
 
@@ -149,7 +145,6 @@ def worker_leave():
     c=get_db().cursor()
     c.execute('UPDATE workers SET is_terminated=1 WHERE name=? and worker_id=?',(data['name'],data['id']))
     close_db()
-    
     return ''
 
 
@@ -192,12 +187,15 @@ def get_worker_status():
         return json.dumps({
             'avg_pixel_time':round(res['avg'],3),
             'active_workers':res['c'],
-            'hosts':hosts
+            'hosts':hosts,
+            'ETA':str(datetime.timedelta(seconds=(WIDTH*HEIGHT-total_rendered_pixels)/res['c']*res['avg']))
         })
     except (NameError,KeyError, TypeError): #res is not defined. No active workers
         return json.dumps({
             'active_workers':0,
-            'avg_pixel_time':0
+            'avg_pixel_time':0,
+            'ETA':0,
+            'hosts':{}
         })
 
 
@@ -207,4 +205,5 @@ def live_view():
     s = render_template('live-view.jinja2', request=request, refresh_frequency=MONITOR_REFRESH_INTERVAL)
     return s
 
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run()

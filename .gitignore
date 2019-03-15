@@ -33,3 +33,4 @@ cmake_install.cmake
 imgRow*
 Ray_Tracer
 .idea/
+render.sqlite3
