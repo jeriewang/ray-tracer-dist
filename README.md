@@ -1,6 +1,6 @@
 # Ray Tracer
 
-Written by Jerry Wang and Mike Gao
+Written by Jerie Wang and Mike Gao
 
 Compile and Run under OSX:
 ```
@@ -14,7 +14,7 @@ make
 
 There are two identical copies of the documentation. They live in 
 
-- https://graphics.jerrywang.website
+- https://notes.jerie.wang/computer-graphics/
 - https://mikegao.net/graphics
 
 # The Image
